@@ -4,48 +4,48 @@
 
 ## Installation
 
- Clone the repository:
+Clone the repository:
 
- git clone[ https://github.com/Rahul1772002/expense-tracker-API.git
+git clone https://github.com/Rahul1772002/expense-tracker-API.git
 
- Navigate to the project directory:
+Navigate to the project directory:
 
- cd expense-tracker-API
+cd expense-tracker-API
 
 ## Install dependencies:
 
- npm install
+npm install
 
 ## Start the server:
 
- npm start
+npm start
 
 ## API Routes
 
- Base URL: http://localhost:5000
+Base URL: http://localhost:5000
 
- Expenses
+Expenses
 
- GET / - Retrieve all expenses
+GET / - Retrieve all expenses
 
- POST / - Add a new expense
+POST / - Add a new expense
 
- GET /:id - Retrieve a specific expense by ID
+GET /:id - Retrieve a specific expense by ID
 
- PATCH /:id - Update an expense by ID
+PATCH /:id - Update an expense by ID
 
- DELETE /:id - Delete an expense by ID
+DELETE /:id - Delete an expense by ID
 
- POST /addMany - Add multiple expenses
+POST /addMany - Add multiple expenses
 
- GET /category/:category - Retrieve expenses by category
+GET /category/:category - Retrieve expenses by category
 
 ## Technologies Used
 
- Node.js
+Node.js
 
- Express.js
+Express.js
 
- MongoDB
+MongoDB
 
- Mongoose
+Mongoose
