@@ -6,7 +6,7 @@
 
  Clone the repository:
 
- git clone https://github.com/yourusername/expense-tracker-API.git
+ git clone[ https://github.com/Rahul1772002/expense-tracker-API.git
 
  Navigate to the project directory:
 
