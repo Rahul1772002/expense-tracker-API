@@ -24,7 +24,25 @@ npm start
 
 Base URL: http://localhost:5000
 
-Expenses
+Authentication Routes
+
+POST /signup - Register a new user
+
+POST /login - Authenticate user and generate token
+
+POST /logout - Logout user
+
+POST /send-verification-code - Send email verification code
+
+POST /verify-verification-code - Verify email verification code
+
+POST /send-forgot-password-code - Send password reset code
+
+POST /verify-forgot-password-code- Verify password reset code
+
+PATCH /change-password - Update user password
+
+Expenses Routes
 
 GET / - Retrieve all expenses
 

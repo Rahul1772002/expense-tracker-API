@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import User from './userModels.js';
 
 
 const expenseSchema = mongoose.Schema(
@@ -34,6 +35,11 @@ const expenseSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: User,
+      required: true
+    }
   },
   { timestamps: true }
 );

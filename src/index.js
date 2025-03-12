@@ -5,9 +5,14 @@ import mongoose from 'mongoose';
 import expenseRoutes from './routes/expenses.js';
 import { homePage } from './controller/controller.js';
 import bodyParser from 'body-parser';
+import authRoutes from './routes/authRoutes.js';
+import helmet from 'helmet';
+import cors from 'cors';
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(cors());
+app.use(helmet());
 
 mongoose
   .connect(process.env.DB_URI)
@@ -22,3 +27,4 @@ app.listen(process.env.PORT, () => {
 
 app.get('/', homePage);
 app.use('/expenses', expenseRoutes);
+app.use('/api/auth', authRoutes);
