@@ -20,14 +20,16 @@ export async function signUp(req, res) {
     const { email, password } = req.body;
     const { error, value } = signUpSchema.validate({ email, password });
     if (error) {
-      res
-        .status(402)
+      return res
+        .status(400)
         .json({ success: false, message: error.details[0].message });
     }
 
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
-      res.json(401).json({ success: false, message: 'User already exists...' });
+      return res
+        .status(409)
+        .json({ success: false, message: 'User already exists...' });
     }
 
     const hashedPassword = await doHash(password, 12);
@@ -35,7 +37,7 @@ export async function signUp(req, res) {
     const newUser = new User({ email: email, password: hashedPassword });
     const result = await newUser.save();
     result.password = undefined;
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Your account has been created successfully.....',
       result,
@@ -50,8 +52,8 @@ export async function logIn(req, res) {
     const { email, password } = req.body;
     const { error, value } = logInSchema.validate({ email, password });
     if (error) {
-      res
-        .status(401)
+      return res
+        .status(400)
         .json({ success: false, message: error.details[0].message });
     }
 
@@ -59,14 +61,14 @@ export async function logIn(req, res) {
       '+password'
     );
     if (!existingUser) {
-      res
-        .status(401)
+      return res
+        .status(404)
         .json({ success: false, message: 'User does not exists...' });
     }
 
     const result = await compareHash(password, existingUser.password);
     if (!result) {
-      res
+      return res
         .status(401)
         .json({ success: false, message: 'Invalid credentials...' });
     }
@@ -81,13 +83,13 @@ export async function logIn(req, res) {
       { expiresIn: '1h' }
     );
 
-    res.cookie('Authorization', 'Bearer' + token, {
+    res.cookie('Authorization', 'Bearer ' + token, {
       expires: new Date(Date.now() + 1 * 3600000),
       httpOnly: process.env.NODE_ENV === 'production',
       secure: process.env.NODE_ENV === 'production',
     });
 
-    res
+    return res
       .status(200)
       .json({ success: true, token, message: 'Logged in successfully...' });
   } catch (error) {
@@ -96,7 +98,7 @@ export async function logIn(req, res) {
 }
 
 export async function logOut(req, res) {
-  res
+  return res
     .clearCookie('Authorization')
     .status(200)
     .json({ success: true, message: 'Logged out successfully...' });
@@ -107,8 +109,8 @@ export async function sendVerificationCode(req, res) {
     const { email } = req.body;
     const { error, value } = verificationCodeSchema.validate({ email });
     if (error) {
-      res
-        .status(401)
+      return res
+        .status(400)
         .json({ success: false, message: error.details[0].message });
     }
 
@@ -116,13 +118,13 @@ export async function sendVerificationCode(req, res) {
       '+password'
     );
     if (!existingUser) {
-      res
-        .status(402)
+      return res
+        .status(404)
         .json({ success: false, message: 'User does not exist..' });
     }
     if (existingUser.verified) {
-      res
-        .status(401)
+      return res
+        .status(400)
         .json({ success: false, message: 'You are already verified' });
     }
     const verificationCode = Math.floor(Math.random() * 1000000).toString();
@@ -142,12 +144,12 @@ export async function sendVerificationCode(req, res) {
       existingUser.verificationCode = hashedValue;
       existingUser.verificationCodeValidation = Date.now();
       await existingUser.save();
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Code has been sent successfully...',
       });
     } else {
-      res.status(401).json({
+      return res.status(500).json({
         success: false,
         message: 'Could not send verification code...',
       });
@@ -164,7 +166,7 @@ export async function validateVerificationCode(req, res) {
     providedCode,
   });
   if (error) {
-    res.status(401).jason({
+    return res.status(400).jason({
       success: false,
       message: error.details[0].message,
     });
@@ -174,11 +176,13 @@ export async function validateVerificationCode(req, res) {
     '+verificationCode +verificationCodeValidation  '
   );
   if (!existingUser) {
-    res.status(404).json({ success: false, message: 'User not found..' });
+    return res
+      .status(404)
+      .json({ success: false, message: 'User not found..' });
   }
   if (existingUser.verified) {
-    res
-      .status(401)
+    return res
+      .status(400)
       .json({ success: false, message: 'You are already verified' });
   }
 
@@ -186,11 +190,13 @@ export async function validateVerificationCode(req, res) {
     !existingUser.verificationCode ||
     !existingUser.verificationCodeValidation
   ) {
-    res.status(401).json({ success: false, message: 'Something went wrong' });
+    return res
+      .status(500)
+      .json({ success: false, message: 'Something went wrong' });
   }
   if (Date.now() - existingUser.verificationCodeValidation > 300000) {
-    res
-      .status(401)
+    return res
+      .status(410)
       .json({ success: false, message: 'Verification code expired..' });
   }
 
@@ -204,13 +210,13 @@ export async function validateVerificationCode(req, res) {
     existingUser.verificationCodeValidation = undefined;
     await existingUser.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Your account has been verified',
       existingUser,
     });
   } else {
-    res.status(402).json({
+    return res.status(500).json({
       success: false,
       message: 'Something went wrong',
     });
@@ -222,14 +228,16 @@ export async function sendForgotPasswordCode(req, res) {
     const { email } = req.body;
     const { error, result } = forgotPasswordCodeSchema.validate({ email });
     if (error) {
-      res
-        .status(401)
+      return res
+        .status(400)
         .json({ success: false, message: error.details[0].message });
     }
 
     const existingUser = await User.findOne({ email: email });
     if (!existingUser) {
-      res.status(404).json({ success: false, message: 'User does not exists' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'User does not exist' });
     }
 
     const fpcode = Math.floor(Math.random() * 1000000).toString();
@@ -248,11 +256,13 @@ export async function sendForgotPasswordCode(req, res) {
       );
       existingUser.forgotPasswordCodeValidation = Date.now();
       await existingUser.save();
-      res
+      return res
         .status(200)
         .json({ success: true, message: 'Code has been sent successfully' });
     } else {
-      res.status(401).json({ success: false, message: 'Could not send code' });
+      return res
+        .status(500)
+        .json({ success: false, message: 'Could not send code' });
     }
   } catch (error) {
     console.log(error);
@@ -269,8 +279,8 @@ export async function verifyForgotPasswordCode(req, res) {
       newPassword,
     });
     if (error) {
-      res
-        .status(401)
+      return res
+        .status(400)
         .json({ success: true, message: error.details[0].message });
     }
 
@@ -278,17 +288,23 @@ export async function verifyForgotPasswordCode(req, res) {
       '+forgotPasswordCode +forgotPasswordCodeValidation'
     );
     if (!existingUser) {
-      res.status(404).json({ success: false, message: 'User not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'User not found' });
     }
     if (
       !existingUser.forgotPasswordCode ||
       !existingUser.forgotPasswordCodeValidation
     ) {
-      res.status(401).json({ success: false, message: 'Something went wrong' });
+      return res
+        .status(500)
+        .json({ success: false, message: 'Something went wrong' });
     }
 
     if (Date.now() - existingUser.forgotPasswordCodeValidation > 300000) {
-      res.status(401).json({ success: false, message: 'Code has expired' });
+      return res
+        .status(410)
+        .json({ success: false, message: 'Code has expired' });
     }
 
     const hashedCode = await hmacProcess(
@@ -302,11 +318,11 @@ export async function verifyForgotPasswordCode(req, res) {
       existingUser.forgotPasswordCode = undefined;
       existingUser.forgotPasswordCodeValidation = undefined;
       await existingUser.save();
-      res
+      return res
         .status(200)
         .json({ success: true, message: 'New password has been set' });
     } else {
-      res
+      return res
         .status(401)
         .json({ success: false, message: 'Invalid credentials..' });
     }
@@ -325,33 +341,35 @@ export async function changePassword(req, res) {
     });
 
     if (error) {
-      res
-        .status(401)
+      return res
+        .status(400)
         .json({ success: false, message: error.details[0].message });
     }
 
     if (!verified) {
-      res
+      return res
         .status(401)
         .json({ success: false, message: 'You are not verified...' });
     }
 
     const existingUser = await User.findOne({ _id: id }).select('+password');
     if (!existingUser) {
-      res.status(401).json({ success: false, message: 'User does not exist' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'User does not exist' });
     }
 
     const result = await compareHash(oldPassword, existingUser.password);
     if (!result) {
-      res
-        .status(401)
+      return res
+        .status(400)
         .json({ success: false, message: 'Incorrect old password' });
     }
 
     const newHashedPassword = await doHash(newPassword, 12);
     existingUser.password = newHashedPassword;
     await existingUser.save();
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Your password has been changed successfully...',
     });

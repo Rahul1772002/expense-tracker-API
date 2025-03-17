@@ -58,6 +58,10 @@ POST /addMany - Add multiple expenses
 
 GET /category/:category - Retrieve expenses by category
 
+Documnentation route
+
+/api-docs
+
 ## Technologies Used
 
 Node.js
@@ -67,3 +71,5 @@ Express.js
 MongoDB
 
 Mongoose
+
+Swagger 

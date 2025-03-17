@@ -1,18 +1,17 @@
 import { expense } from '../models/expenses.js';
-import { signUpSchema } from '../middlewares/validator.js';
 
 export async function getExpenses(req, res) {
   try {
     const { id } = req.user;
     let data = await expense.find({ userId: id });
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching expenses', error });
+    return res.status(500).json({ message: 'Error fetching expenses', error });
   }
 }
 
 export function homePage(req, res) {
-  res.send(`
+  return res.send(`
     <h1>Welcome to Expense Tracker API</h1>
     <p>Available Routes:</p>
     <ul>
@@ -36,11 +35,11 @@ export async function addExpenses(req, res) {
     }
     let newExpense = new expense({ title, amount, category, date, userId: id });
     await newExpense.save();
-    res
-      .status(201)
+    return res
+      .status(200)
       .json({ message: 'Expense added successfully', expense: newExpense });
   } catch (error) {
-    res.status(500).json({ message: 'Error adding expense', error });
+    return res.status(500).json({ message: 'Error adding expense', error });
   }
 }
 
@@ -49,9 +48,9 @@ export async function getExpenseById(req, res) {
     let { id } = req.user;
     let data = await expense.find({ _id: req.params.id, userId: id });
     if (!data) return res.status(404).json({ message: 'Expense not found' });
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching expense', error });
+    return res.status(500).json({ message: 'Error fetching expense', error });
   }
 }
 
@@ -65,12 +64,12 @@ export async function updateExpense(req, res) {
     );
     if (!updatedExpense)
       return res.status(404).json({ message: 'Expense not found' });
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Expense updated successfully',
       expense: updatedExpense,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating expense', error });
+    return res.status(500).json({ message: 'Error updating expense', error });
   }
 }
 
@@ -83,9 +82,9 @@ export async function deleteExpense(req, res) {
     });
     if (!deletedExpense)
       return res.status(404).json({ message: 'Expense not found' });
-    res.status(200).json({ message: 'Expense deleted successfully' });
+    return res.status(200).json({ message: 'Expense deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting expense', error });
+    return res.status(500).json({ message: 'Error deleting expense', error });
   }
 }
 
@@ -96,10 +95,18 @@ export async function addManyExpenses(req, res) {
     if (!Array.isArray(data) || data.length === 0) {
       return res.status(400).json({ message: 'Provide an array of expenses' });
     }
-    await expense.insertMany({ userId: id }, data);
-    res.status(201).json({ message: 'Expenses added successfully' });
+
+    const expensesWithUserId = data.map((expense) => ({
+      ...expense,
+      userId: id,
+    }));
+
+    await expense.insertMany(expensesWithUserId);
+    return res.status(200).json({ message: 'Expenses added successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error adding multiple expenses', error });
+    return res
+      .status(500)
+      .json({ message: 'Error adding multiple expenses', error });
   }
 }
 
@@ -116,9 +123,9 @@ export async function getExpenseByCategory(req, res) {
         .status(404)
         .json({ message: 'No expenses found for this category' });
     }
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: 'Error fetching expenses by category', error });
   }
