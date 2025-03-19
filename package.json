@@ -19,6 +19,8 @@
   },
   "homepage": "https://github.com/Rahul1772002/expense-tracker-API#readme",
   "dependencies": {
+    "@grpc/grpc-js": "^1.13.0",
+    "@grpc/proto-loader": "^0.7.13",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

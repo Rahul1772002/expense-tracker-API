@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package auth;
+
+service authService{
+    rpc signUp(signupRequest) returns (signupResponse);
+    rpc logIn(loginRequest) returns (loginResponse);
+    rpc logOut(logoutRequest) returns (logoutResponse);
+    rpc sendVerificationCode(svcRequest) returns (svcResponse);
+    rpc verifyVerificationCode(vvcRequest) returns (vvcResponse);
+    rpc sendForgotPasswordCode(sfpcRequest) returns (sfpcResponse);
+    rpc verifyForgotPasswordCode( vfpcRequest) returns( vfpcResponse);
+    rpc changePassword( cpRequest) returns (cpResponse);
+};
+
+message signupRequest{
+    string email = 1;
+    string password = 2;
+};
+
+message signupResponse{
+    bool success = 1;
+    string message = 2;
+};
+
+message loginRequest{
+    string email = 1;
+    string password = 2;
+};
+
+message loginResponse{
+    bool success= 1;
+    string message = 2;
+    string token = 3;
+};
+
+message logoutRequest{
+    string email = 1;
+    string token = 2;
+};
+
+message logoutResponse{
+    bool success = 1;
+    string message= 2;
+    string token= 3;
+};
+
+message svcRequest{
+    string email = 1;
+    string toke = 2;
+};
+
+message svcResponse{
+    bool success = 1;
+    string message = 2;
+    string token = 3;
+};
+
+message vvcRequest{
+    string email = 1;
+    int32 providedCode = 2;
+};
+
+message vvcResponse{
+    bool success = 1;
+    string message= 2;
+};
+
+message sfpcRequest{
+    string email = 1;
+};
+
+message sfpcResponse{
+    bool success = 1;
+    string message = 2;
+}
+
+message vfpcRequest{
+    string email = 1;
+    int32 providedCode =2;
+    string newPassword =3;
+};
+
+message vfpcResponse{
+    bool success =1;
+    string message = 2;
+};
+
+message cpRequest{
+    string email =1 ;
+    string oldPassword =2;
+    string newPassword = 3;
+};
+
+message cpResponse{
+    bool success =1;
+    string message = 2;
+};

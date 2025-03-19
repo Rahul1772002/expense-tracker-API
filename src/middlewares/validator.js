@@ -81,3 +81,19 @@ export const changePasswordSchema = Joi.object({
     .required()
     .pattern(new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)),
 });
+
+export const changePasswordSchemagrpc = Joi.object({
+  email: Joi.string()
+    .min(5)
+    .max(60)
+    .required()
+    .email({
+      tlds: { allow: ['com', 'net'] },
+    }),
+  oldPassword: Joi.string()
+    .required()
+    .pattern(new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)),
+  newPassword: Joi.string()
+    .required()
+    .pattern(new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)),
+});
