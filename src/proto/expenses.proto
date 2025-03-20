@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package expenses;
+
+service expenseService{
+    rpc getExpenses(getExpenseRequest) returns (getExpenseResponse);
+    rpc addExpense (addExpenseRequest) returns (addExpenseResponse);
+    rpc updateExpense( updateExpenseRequest) returns (updateExpenseResponse);
+    rpc deleteExpense(deleteExpenseRequest) returns (deleteExpenseResponse);
+    rpc findExpenseById(febiRequest) returns (febiResponse);
+    rpc findExpenseByCategory( febcRequest) returns (febcResponse);
+}
+
+message getExpenseRequest{
+    string email =1;
+
+};
+
+message getExpenseResponse{
+    repeated Expense allExpenses =1;
+};
+
+message Expense{
+    string id = 1;
+    string title =2;
+    double amount =3 ;
+    string category = 4;
+    string date = 5;
+    string description =6 ;
+};
+
+message addExpenseRequest{
+    Expense sentExpense = 1;
+};
+
+message addExpenseResponse{
+    string success = 1;
+    string message =2;
+};
+
+message updateExpenseRequest{
+    Expense uExpense =1;
+};
+
+message updateExpenseResponse{
+    Expense expenseResponse =1;
+};
+
+message deleteExpenseRequest{
+    Expense dExpense =1;
+};
+
+message deleteExpenseResponse{
+    string success =1;
+    string message =2 ;
+};
+
+message febiRequest{
+    string id =1;
+};
+
+message febiResponse{
+    repeated Expense expenses = 1;
+};
+
+message febcRequest{
+    string id =1;
+    string category =2;
+}
+
+message febcResponse{
+    repeated Expense expenses =1 ;
+}

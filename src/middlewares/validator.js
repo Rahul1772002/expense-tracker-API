@@ -97,3 +97,7 @@ export const changePasswordSchemagrpc = Joi.object({
     .required()
     .pattern(new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)),
 });
+
+export const getExpensesHandlerSchema = Joi.object({
+  id: Joi.string(),
+});

@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import User from './userModels.js';
 
-
 const expenseSchema = mongoose.Schema(
   {
     title: {
@@ -38,12 +37,11 @@ const expenseSchema = mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: User,
-      required: true
-    }
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
 export const expense = mongoose.model('expense', expenseSchema);
-
 

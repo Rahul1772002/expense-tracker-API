@@ -13,6 +13,15 @@ import {
   verifyForgotPasswordCodeHandler,
   changePasswordHandler,
 } from './controllers/grpcAuthController.js';
+import {
+  getExpensesHandler,
+  addExpenseHandler,
+  updateExpenseHandler,
+  deleteExpenseHandler,
+  febiHandler,
+  febcHandler,
+} from './controllers/grpcExpenseController.js';
+
 import mongoose from 'mongoose';
 import { logOut, sendVerificationCode } from '../controller/authController.js';
 const packageDefinition = protoLoader.loadSync(
@@ -26,7 +35,21 @@ const packageDefinition = protoLoader.loadSync(
   }
 );
 
+const packagetDefinitionExpenses = protoLoader.loadSync(
+  path.resolve('../proto/expenses.proto'),
+  {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true,
+  }
+);
+
 const authProto = grpc.loadPackageDefinition(packageDefinition).auth;
+const expenseProto = grpc.loadPackageDefinition(
+  packagetDefinitionExpenses
+).expenses;
 
 async function main() {
   await mongoose
@@ -46,6 +69,16 @@ async function main() {
     sendForgotPasswordCode: sendForgotPasswordCodeHandler,
     verifyForgotPasswordCode: verifyForgotPasswordCodeHandler,
     changePassword: changePasswordHandler,
+    deleteExpense: deleteExpenseHandler,
+  });
+
+  server.addService(expenseProto.expenseService.service, {
+    getExpenses: getExpensesHandler,
+    addExpense: addExpenseHandler,
+    updateExpense: updateExpenseHandler,
+    deleteExpense: deleteExpenseHandler,
+    findExpenseById: febiHandler,
+    findExpenseByCategory: febcHandler,
   });
 
   server.bindAsync(

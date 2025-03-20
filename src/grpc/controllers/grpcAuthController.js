@@ -72,11 +72,14 @@ export async function logInHandler(call, callback) {
       { expiresIn: '1h' }
     );
     console.log(token);
+    const metadata = new grpc.Metadata();
+    metadata.add('authorization', `Bearer ${token}`);
+    console.log('Sending Metadata:', metadata);
 
+    call.sendMetadata(metadata);
     return await callback(null, {
       success: true,
       message: 'Login successful',
-      token: token,
     });
   } catch (error) {
     console.log(error);
