@@ -81,7 +81,7 @@ export async function updateExpense(req, res) {
     );
     if (!updatedExpense)
       return res.status(404).json({ message: 'Expense not found' });
-    await redisClient.del(`expenses:${id}`); // Invalidate cache
+    await redisClient.del(`expenses:${id}`);
     return res.status(200).json({
       message: 'Expense updated successfully',
       expense: updatedExpense,
@@ -100,7 +100,7 @@ export async function deleteExpense(req, res) {
     });
     if (!deletedExpense)
       return res.status(404).json({ message: 'Expense not found' });
-    await redisClient.del(`expenses:${id}`); // Invalidate cache
+    await redisClient.del(`expenses:${id}`);
     return res.status(200).json({ message: 'Expense deleted successfully' });
   } catch (error) {
     return res.status(500).json({ message: 'Error deleting expense', error });
