@@ -3,14 +3,14 @@ import jwt from 'jsonwebtoken';
 export async function identification(req, res, next) {
   let token;
 
-  // if (req.headers.client === 'not-browser') {
-  //   token = req.headers.authorization;
-  // } else {
-  //   token = req.cookies['Authorization'];
-  // }
+  if (req.headers.client === 'not-browser') {
+    token = req.headers.authorization;
+  } else {
+    token = req.cookies['Authorization'];
+  }
 
-  console.log('Received Headers:', req.headers);
-  token = req.headers.authorization || req.cookies.Authorization; //use while using swagger
+  // console.log('Received Headers:', req.headers);
+  // token = req.headers.authorization || req.cookies.Authorization; //use while using swagger
 
   if (!token) {
     return res.status(401).json({

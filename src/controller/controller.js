@@ -1,14 +1,5 @@
 import { expense } from '../models/expenses.js';
-
-export async function getExpenses(req, res) {
-  try {
-    const { id } = req.user;
-    let data = await expense.find({ userId: id });
-    return res.status(200).json(data);
-  } catch (error) {
-    return res.status(500).json({ message: 'Error fetching expenses', error });
-  }
-}
+import redisClient from '../config/redis.js';
 
 export function homePage(req, res) {
   return res.send(`
@@ -26,15 +17,41 @@ export function homePage(req, res) {
   `);
 }
 
+export async function getExpenses(req, res) {
+  try {
+    const { id } = req.user;
+    const cacheKey = `expenses:${id}`;
+
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).json(JSON.parse(cachedData));
+    }
+
+    let data = await expense.find({ userId: id });
+    await redisClient.setEx(cacheKey, 3600, JSON.stringify(data));
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: 'Error fetching expenses', error });
+  }
+}
+
 export async function addExpenses(req, res) {
   try {
     const { id } = req.user;
-    const { title, amount, category, date } = req.body;
-    if (!title || !amount || !category || !date) {
+    const { title, amount, category, date, description } = req.body;
+    if (!title || !amount || !category || !date || !description) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    let newExpense = new expense({ title, amount, category, date, userId: id });
+    let newExpense = new expense({
+      title,
+      amount,
+      category,
+      date,
+      description,
+      userId: id,
+    });
     await newExpense.save();
+    await redisClient.del(`expenses:${id}`);
     return res
       .status(200)
       .json({ message: 'Expense added successfully', expense: newExpense });
@@ -46,7 +63,7 @@ export async function addExpenses(req, res) {
 export async function getExpenseById(req, res) {
   try {
     let { id } = req.user;
-    let data = await expense.find({ _id: req.params.id, userId: id });
+    let data = await expense.findOne({ _id: req.params.id, userId: id });
     if (!data) return res.status(404).json({ message: 'Expense not found' });
     return res.status(200).json(data);
   } catch (error) {
@@ -57,13 +74,14 @@ export async function getExpenseById(req, res) {
 export async function updateExpense(req, res) {
   try {
     const { id } = req.user;
-    let updatedExpense = await expense.findByIdAndUpdate(
+    let updatedExpense = await expense.findOneAndUpdate(
       { _id: req.params.id, userId: id },
       req.body,
       { new: true }
     );
     if (!updatedExpense)
       return res.status(404).json({ message: 'Expense not found' });
+    await redisClient.del(`expenses:${id}`); // Invalidate cache
     return res.status(200).json({
       message: 'Expense updated successfully',
       expense: updatedExpense,
@@ -76,37 +94,16 @@ export async function updateExpense(req, res) {
 export async function deleteExpense(req, res) {
   try {
     const { id } = req.user;
-    let deletedExpense = await expense.findByIdAndDelete({
+    let deletedExpense = await expense.findOneAndDelete({
       _id: req.params.id,
       userId: id,
     });
     if (!deletedExpense)
       return res.status(404).json({ message: 'Expense not found' });
+    await redisClient.del(`expenses:${id}`); // Invalidate cache
     return res.status(200).json({ message: 'Expense deleted successfully' });
   } catch (error) {
     return res.status(500).json({ message: 'Error deleting expense', error });
-  }
-}
-
-export async function addManyExpenses(req, res) {
-  try {
-    const { id } = req.user;
-    let data = req.body;
-    if (!Array.isArray(data) || data.length === 0) {
-      return res.status(400).json({ message: 'Provide an array of expenses' });
-    }
-
-    const expensesWithUserId = data.map((expense) => ({
-      ...expense,
-      userId: id,
-    }));
-
-    await expense.insertMany(expensesWithUserId);
-    return res.status(200).json({ message: 'Expenses added successfully' });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: 'Error adding multiple expenses', error });
   }
 }
 
@@ -128,5 +125,31 @@ export async function getExpenseByCategory(req, res) {
     return res
       .status(500)
       .json({ message: 'Error fetching expenses by category', error });
+  }
+}
+
+export async function addManyExpenses(req, res) {
+  try {
+    const { id } = req.user;
+    let data = req.body;
+
+    if (!Array.isArray(data) || data.length === 0) {
+      return res.status(400).json({ message: 'Provide an array of expenses' });
+    }
+
+    const expensesWithUserId = data.map((expense) => ({
+      ...expense,
+      userId: id,
+    }));
+
+    await expense.insertMany(expensesWithUserId);
+
+    await redisClient.del(`expenses:${id}`);
+
+    return res.status(200).json({ message: 'Expenses added successfully' });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: 'Error adding multiple expenses', error });
   }
 }
